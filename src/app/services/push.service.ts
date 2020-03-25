@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { OneSignal, OSNotification, OSNotificationOpenedResult, OSNotificationPayload } from '@ionic-native/onesignal/ngx';
 import { Subject } from 'rxjs';
+import { Storage } from '@ionic/storage';
 
 @Injectable({
   providedIn: 'root'
@@ -12,8 +13,11 @@ export class PushService {
   public mensajesChanged = new Subject<void>();
 
   constructor(
-    private oneSignal: OneSignal
-  ) { }
+    private oneSignal: OneSignal,
+    private storage: Storage
+  ) {
+    this.loadMensajes();
+  }
 
   initConfig() {
 
@@ -51,9 +55,26 @@ export class PushService {
         ) !== -1;
 
     if (!notificationExists) {
+
       this.mensajes.unshift(payload);
       this.mensajesChanged.next();
+
+      this.saveMensajes();
+
     }
+
+  }
+
+  saveMensajes(): void {
+    this.storage.set('mensajes', this.mensajes);
+  }
+
+  async loadMensajes(): Promise<void> {
+
+    const mensajes = (await this.storage.get('mensajes') as OSNotificationPayload[]) || [];
+    this.mensajes = mensajes;
+
+    this.mensajesChanged.next();
 
   }
 

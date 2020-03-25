@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ApplicationRef } from '@angular/core';
 import { PushService } from '../services/push.service';
 import { Subscription } from 'rxjs';
 
@@ -14,11 +14,21 @@ export class HomePage implements OnInit, OnDestroy {
   private mensajesSub: Subscription;
 
   constructor(
-    private pushService: PushService
+    private pushService: PushService,
+    private applicationRef: ApplicationRef
   ) {}
 
   ngOnInit() {
-    this.mensajesSub = this.pushService.mensajesChanged.subscribe(() => this.mensajes = this.pushService.getMensajes());
+
+    this.mensajesSub = this.pushService.mensajesChanged.subscribe(() => {
+      this.mensajes = this.pushService.getMensajes();
+      this.applicationRef.tick();
+    });
+
+  }
+
+  ionViewWillEnter() {
+    this.mensajes = this.pushService.getMensajes();
   }
 
   ngOnDestroy() {
