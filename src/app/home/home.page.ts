@@ -36,6 +36,10 @@ export class HomePage implements OnInit, OnDestroy {
     this.userId = this.pushService.userId;
   }
 
+  async deleteMensajes(): Promise<void> {
+    await this.pushService.deleteMensajes();
+  }
+
   ngOnDestroy() {
     this.mensajesSub.unsubscribe();
   }

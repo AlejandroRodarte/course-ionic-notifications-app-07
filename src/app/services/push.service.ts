@@ -85,4 +85,13 @@ export class PushService {
     this.mensajesChanged.next();
   }
 
+  async deleteMensajes(): Promise<void> {
+
+    await this.storage.clear();
+    this.mensajes = [];
+
+    this.mensajesChanged.next();
+
+  }
+
 }
