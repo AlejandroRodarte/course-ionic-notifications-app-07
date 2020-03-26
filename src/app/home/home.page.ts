@@ -14,6 +14,8 @@ export class HomePage implements OnInit, OnDestroy {
 
   private mensajesSub: Subscription;
 
+  public userId: string;
+
   constructor(
     private pushService: PushService,
     private applicationRef: ApplicationRef
@@ -28,6 +30,10 @@ export class HomePage implements OnInit, OnDestroy {
 
     await this.pushService.loadMensajes();
 
+  }
+
+  ionViewDidEnter() {
+    this.userId = this.pushService.userId;
   }
 
   ngOnDestroy() {

@@ -13,6 +13,8 @@ export class PushService {
 
   public mensajesChanged = new Subject<void>();
 
+  public userId: string;
+
   constructor(
     private oneSignal: OneSignal,
     private storage: Storage
@@ -39,6 +41,8 @@ export class PushService {
         await this.loadMensajes();
         await this.receiveNotification(notification);
       });
+
+    this.oneSignal.getIds().then(({ userId }) => this.userId = userId);
 
     this.oneSignal.endInit();
 
