@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { OneSignal, OSNotification, OSNotificationOpenedResult, OSNotificationPayload } from '@ionic-native/onesignal/ngx';
 import { Subject } from 'rxjs';
 import { Storage } from '@ionic/storage';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -15,9 +16,7 @@ export class PushService {
   constructor(
     private oneSignal: OneSignal,
     private storage: Storage
-  ) {
-    this.loadMensajes();
-  }
+  ) { }
 
   initConfig() {
 
@@ -33,7 +32,13 @@ export class PushService {
     this
       .oneSignal
       .handleNotificationOpened()
-      .subscribe((notification: OSNotificationOpenedResult) => console.log('Notification opened: ', notification));
+      .pipe(
+        map((notificationOpenedResult: OSNotificationOpenedResult) => notificationOpenedResult.notification)
+      )
+      .subscribe(async (notification: OSNotification) => {
+        await this.loadMensajes();
+        await this.receiveNotification(notification);
+      });
 
     this.oneSignal.endInit();
 
@@ -43,7 +48,9 @@ export class PushService {
     return this.mensajes.slice();
   }
 
-  receiveNotification = (notification: OSNotification) => {
+  receiveNotification = async (notification: OSNotification) => {
+
+    await this.loadMensajes();
 
     const payload = notification.payload;
 
@@ -59,23 +66,19 @@ export class PushService {
       this.mensajes.unshift(payload);
       this.mensajesChanged.next();
 
-      this.saveMensajes();
+      await this.saveMensajes();
 
     }
 
   }
 
-  saveMensajes(): void {
-    this.storage.set('mensajes', this.mensajes);
+  async saveMensajes(): Promise<void> {
+    await this.storage.set('mensajes', this.mensajes);
   }
 
   async loadMensajes(): Promise<void> {
-
-    const mensajes = (await this.storage.get('mensajes') as OSNotificationPayload[]) || [];
-    this.mensajes = mensajes;
-
+    this.mensajes = await this.storage.get('mensajes') || [];
     this.mensajesChanged.next();
-
   }
 
 }

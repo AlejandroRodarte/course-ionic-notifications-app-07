@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ApplicationRef } from '@angular/core';
 import { PushService } from '../services/push.service';
 import { Subscription } from 'rxjs';
+import { OSNotificationPayload } from '@ionic-native/onesignal/ngx';
 
 @Component({
   selector: 'app-home',
@@ -9,7 +10,7 @@ import { Subscription } from 'rxjs';
 })
 export class HomePage implements OnInit, OnDestroy {
 
-  public mensajes = this.pushService.getMensajes();
+  public mensajes: OSNotificationPayload[] = [];
 
   private mensajesSub: Subscription;
 
@@ -18,17 +19,15 @@ export class HomePage implements OnInit, OnDestroy {
     private applicationRef: ApplicationRef
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
 
     this.mensajesSub = this.pushService.mensajesChanged.subscribe(() => {
       this.mensajes = this.pushService.getMensajes();
       this.applicationRef.tick();
     });
 
-  }
+    await this.pushService.loadMensajes();
 
-  ionViewWillEnter() {
-    this.mensajes = this.pushService.getMensajes();
   }
 
   ngOnDestroy() {
